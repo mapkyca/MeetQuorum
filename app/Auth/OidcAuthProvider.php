@@ -38,8 +38,11 @@ class OidcAuthProvider implements AuthProviderInterface
     {
         $this->assertConfigured();
 
+        $scopesRaw = (string) data_get(config('services.keycloak'), 'scopes', 'openid');
+        $scopes = preg_split('/[\s,]+/', trim($scopesRaw), -1, PREG_SPLIT_NO_EMPTY) ?: ['openid'];
+
         return Socialite::driver('keycloak')
-            ->scopes(['openid', 'profile', 'email'])
+            ->scopes($scopes)
             ->redirect();
     }
 

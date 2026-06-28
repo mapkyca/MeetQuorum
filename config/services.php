@@ -42,6 +42,7 @@ return [
         'client_id' => env('KEYCLOAK_CLIENT_ID'),
         'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
         'redirect' => env('KEYCLOAK_REDIRECT_URI', rtrim((string) env('APP_URL', 'http://localhost:8080'), '/').'/auth/oidc/callback'),
+        'scopes' => env('KEYCLOAK_SCOPES', 'openid'),
     ],
 
 ];

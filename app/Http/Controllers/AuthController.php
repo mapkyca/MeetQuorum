@@ -108,6 +108,17 @@ class AuthController extends Controller
 
     public function oidcCallback(Request $request): RedirectResponse
     {
+        $providerError = (string) $request->query('error', '');
+        if ($providerError !== '') {
+            $errorDescription = (string) $request->query('error_description', '');
+
+            if ($providerError === 'invalid_request' && stripos($errorDescription, 'scope') !== false) {
+                return redirect()->route('login')->with('error', 'SSO login failed: invalid OIDC scopes configured for this Keycloak client.');
+            }
+
+            return redirect()->route('login')->with('error', 'SSO login failed: '.$providerError);
+        }
+
         try {
             $user = $this->authProvider->handleProviderCallback();
 
