@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -7,6 +7,7 @@ RUN apt-get update \
         git \
         unzip \
         curl \
+        libcurl4-openssl-dev \
         libicu-dev \
         libzip-dev \
         libxml2-dev \

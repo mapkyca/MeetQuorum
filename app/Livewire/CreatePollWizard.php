@@ -172,18 +172,10 @@ class CreatePollWizard extends Component
         if (! $poll instanceof Poll) {
             throw new \RuntimeException('Failed to create poll.');
         }
-
-        $redirect = redirect()->route('poll.published', [
-            'permalink_token' => $poll->permalink_token,
-            'mgmt' => $mgmtToken,
+        return redirect()->route("poll.published", [
+            "permalink_token" => $poll->permalink_token,
+            "mgmt" => $mgmtToken,
         ]);
-
-        if (! Auth::check() && $mgmtToken) {
-            $cookieName = 'poll_mgmt_'.$poll->id;
-            $redirect->cookie(cookie()->make($cookieName, $mgmtToken, 60 * 24 * 365));
-        }
-
-        return $redirect;
     }
 
     public function render(): View
