@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -96,16 +97,28 @@ class AuthController extends Controller
 
     public function oidcRedirect()
     {
-        return $this->authProvider->redirectToProvider();
+        try {
+            return $this->authProvider->redirectToProvider();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()->route('login')->with('error', 'Unable to start SSO login. Check OIDC configuration.');
+        }
     }
 
     public function oidcCallback(Request $request): RedirectResponse
     {
-        $user = $this->authProvider->handleProviderCallback();
+        try {
+            $user = $this->authProvider->handleProviderCallback();
 
-        Auth::login($user);
-        $request->session()->regenerate();
+            Auth::login($user);
+            $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+            return redirect()->intended(route('home'));
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()->route('login')->with('error', 'SSO login failed. Please try again or use local sign in.');
+        }
     }
 }
