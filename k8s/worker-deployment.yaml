@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doodle-worker
+  labels:
+    app: doodle-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doodle-worker
+  template:
+    metadata:
+      labels:
+        app: doodle-worker
+    spec:
+      containers:
+        - name: worker
+          image: your-registry/doodle-clone:latest
+          command:
+            - php
+            - artisan
+            - queue:work
+            - --sleep=3
+            - --tries=3
+          envFrom:
+            - secretRef:
+                name: doodle-env
+          volumeMounts:
+            - name: app-storage
+              mountPath: /var/www/html/storage
+            - name: app-bootstrap-cache
+              mountPath: /var/www/html/bootstrap/cache
+      volumes:
+        - name: app-storage
+          emptyDir: {}
+        - name: app-bootstrap-cache
+          emptyDir: {}

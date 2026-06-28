@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('voters', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('poll_id');
+            $table->string('name', 255);
+            $table->string('email', 255);
+            $table->string('magic_token', 64)->unique();
+            $table->dateTime('token_expires_at');
+            $table->timestamps();
+
+            $table->unique(['poll_id', 'email']);
+
+            $table->foreign('poll_id')
+                ->references('id')
+                ->on('polls')
+                ->cascadeOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('voters');
+    }
+};
