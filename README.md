@@ -1,66 +1,304 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MeetQuorum
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+MeetQuorum is a Doodle-style scheduling poll application built with Laravel 11 and Livewire 3.
 
-## About Laravel
+It supports:
+- Poll creation with timezone-aware slot generation
+- Guest and authenticated voting
+- Ranked results and poll management links
+- Local authentication by default
+- Optional OAuth2/OpenID Connect SSO with Keycloak
+- Docker-based local development with MySQL, Redis, Nginx, and Mailpit
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.4
+- Laravel 11
+- Livewire 3
+- MySQL 8
+- Redis 7
+- Nginx 1.27
+- Vite + Tailwind CSS
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Quick Start (Docker)
 
-## Learning Laravel
+1. Copy environment file:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+cp .env.example .env
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+2. Build and start containers:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+docker compose build app
+docker compose up -d
+```
 
-## Laravel Sponsors
+3. Install PHP dependencies (inside app container):
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+docker compose exec app composer install
+```
 
-### Premium Partners
+4. Generate app key (first run only):
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+docker compose exec app php artisan key:generate
+```
 
-## Contributing
+5. Run migrations:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker compose exec app php artisan migrate --force
+```
 
-## Code of Conduct
+6. Install frontend dependencies and build assets (host machine):
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+npm install
+npm run build
+```
 
-## Security Vulnerabilities
+7. Open the app:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Application: http://localhost:8080
+- Mailpit UI: http://localhost:8025
+
+## Local Development (Without Docker)
+
+1. Install dependencies:
+
+```bash
+composer install
+npm install
+```
+
+2. Create and configure `.env`:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+3. Configure DB/Redis in `.env`, then run:
+
+```bash
+php artisan migrate
+npm run dev
+php artisan serve
+```
+
+## Authentication Modes
+
+Authentication mode is controlled by `AUTH_DRIVER`.
+
+- `local`: email/password login and registration
+- `oidc`: disables local password login and uses SSO button flow
+
+Default:
+
+```dotenv
+AUTH_DRIVER=local
+```
+
+## Enable Keycloak SSO
+
+MeetQuorum keeps local login enabled unless you explicitly switch to OIDC mode.
+
+1. Set auth driver:
+
+```dotenv
+AUTH_DRIVER=oidc
+```
+
+2. Configure Keycloak values in `.env`:
+
+```dotenv
+KEYCLOAK_BASE_URL=https://auth.aria.services/
+KEYCLOAK_REALM=TEST
+KEYCLOAK_CLIENT_ID=postman
+KEYCLOAK_CLIENT_SECRET=your-client-secret
+KEYCLOAK_REDIRECT_URI=http://localhost:8080/auth/oidc/callback
+```
+
+3. Clear config cache:
+
+```bash
+php artisan config:clear
+```
+
+4. Visit `/login` and click **Sign in with SSO**.
+
+### Keycloak Notes
+
+- Both `KEYCLOAK_BASE_URL` and `KEYCLOAK_BASEURL` are supported for compatibility.
+- Redirect URI must match your Keycloak client configuration exactly.
+- In OIDC mode, local password authentication is intentionally disabled.
+
+## Environment Configuration
+
+Below are the main variables from `.env.example`.
+
+### Core App
+
+```dotenv
+APP_NAME="MeetQuorum"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=UTC
+APP_URL=http://localhost:8080
+```
+
+### Locale
+
+```dotenv
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+```
+
+### Logging
+
+```dotenv
+LOG_CHANNEL=stderr
+LOG_STACK=stderr
+LOG_LEVEL=debug
+LOG_STDERR_FORMATTER=Monolog\Formatter\JsonFormatter
+```
+
+### Database (MySQL)
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=doodle_clone
+DB_USERNAME=doodle
+DB_PASSWORD=doodle
+```
+
+### Session / Cache / Queue (Redis)
+
+```dotenv
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+SESSION_CONNECTION=default
+
+CACHE_STORE=redis
+CACHE_PREFIX=
+
+QUEUE_CONNECTION=redis
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+```
+
+### Mail
+
+```dotenv
+MAIL_MAILER=log
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### Frontend
+
+```dotenv
+VITE_APP_NAME="${APP_NAME}"
+```
+
+### Auth / SSO
+
+```dotenv
+AUTH_DRIVER=local
+
+KEYCLOAK_BASE_URL=
+KEYCLOAK_BASEURL=
+KEYCLOAK_REALM=
+KEYCLOAK_CLIENT_ID=
+KEYCLOAK_CLIENT_SECRET=
+KEYCLOAK_REDIRECT_URI=http://localhost:8080/auth/oidc/callback
+```
+
+### Poll Timing
+
+```dotenv
+HALF_DAY_MORNING_START=09:00
+HALF_DAY_MORNING_END=13:00
+HALF_DAY_AFTERNOON_START=13:00
+HALF_DAY_AFTERNOON_END=17:00
+
+APP_SLOT_WINDOW_START=09:00
+APP_SLOT_WINDOW_END=17:00
+
+VOTER_MAGIC_TOKEN_DAYS=90
+```
+
+### Branding
+
+```dotenv
+BRAND_LOGO_URL=/images/meetquorum-logo.svg
+BRAND_BANNER_URL=
+BRAND_PRIMARY_COLOR=#4F46E5
+BRAND_FAVICON_URL=
+```
+
+## Important Routes
+
+- `GET /` home page
+- `GET /poll/create` create poll
+- `GET /poll/{permalink_token}` vote view
+- `GET /poll/{permalink_token}/results` results matrix
+- `GET /poll/{permalink_token}/manage` poll management
+- `GET /dashboard` authenticated dashboard
+- `GET /auth/oidc/redirect` start SSO flow
+- `GET /auth/oidc/callback` SSO callback
+- `GET /healthz` DB + Redis health check
+
+## Operational Commands
+
+```bash
+# App container logs
+docker compose logs -f app
+
+# Run tests
+docker compose exec app php artisan test
+
+# Clear caches
+docker compose exec app php artisan optimize:clear
+```
+
+## Troubleshooting
+
+### Vite manifest not found
+
+Build frontend assets:
+
+```bash
+npm install
+npm run build
+```
+
+### DB table missing
+
+Run migrations:
+
+```bash
+docker compose exec app php artisan migrate --force
+```
+
+### SSO redirect fails
+
+- Check `AUTH_DRIVER=oidc`
+- Verify Keycloak URL, realm, client ID, client secret, and redirect URI
+- Run `php artisan config:clear`
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
