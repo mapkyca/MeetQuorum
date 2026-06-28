@@ -1,0 +1,11 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MeetQuorum logo">
+  <defs>
+    <linearGradient id="mq-grad" x1="16" y1="16" x2="112" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#155E75"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#mq-grad)"/>
+  <path d="M31 90V38H42L55 62L68 38H79V90H69V56L56 78H54L41 56V90H31Z" fill="white"/>
+  <path d="M88 37C100.15 37 110 46.85 110 59C110 65.79 106.92 71.86 102.09 75.89L111 85L104.5 91.5L95.59 82.38C93.26 83.4 90.69 84 88 84C75.85 84 66 74.15 66 62C66 49.85 75.85 40 88 40V37ZM88 49C80.82 49 75 54.82 75 62C75 69.18 80.82 75 88 75C95.18 75 101 69.18 101 62C101 54.82 95.18 49 88 49Z" fill="white"/>
+</svg>
